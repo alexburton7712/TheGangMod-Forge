@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 public class FishyEntity extends Cat {
-    protected FishyEntity(EntityType<? extends Cat> pEntityType, Level pLevel) {
+    public FishyEntity(EntityType<? extends Cat> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
     }
 
