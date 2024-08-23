@@ -20,18 +20,29 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Random;
+
 public class FishyEntity extends Cat {
-    public static final double TEMPT_SPEED_MOD = 0.2; // Slower speed for tempting
-    public static final double WALK_SPEED_MOD = 0.05;  // Slower speed for walking
-    public static final double SPRINT_SPEED_MOD = 0.1; // Slower speed for sprinting
+    private final Random random = new Random(); // Random generator
+
+    public static final double TEMPT_SPEED_MOD = 0.5; // Slower speed for tempting
+    public static final double WALK_SPEED_MOD = 0.01;  // Slower speed for walking
+
+    private static final int MIN_WAVE_COOLDOWN_TICKS = 400; // 20 seconds in ticks
+    private static final int MAX_WAVE_COOLDOWN_TICKS = 600; // 30 seconds in ticks
+
+    private int idleAnimationTimeout = 0;
+    private int waveCooldown = 0; // Cooldown timer
+    private boolean hasWaved = false; // Ensure wave animation triggers only once
+
+    public final AnimationState idleAnimationState = new AnimationState();
+    public final AnimationState waveAnimationState = new AnimationState();
 
     public FishyEntity(EntityType<? extends Cat> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
     }
 
-    public final AnimationState idleAnimationState = new AnimationState();
-    private int idleAnimationTimeout = 0;
-
+    // Tick related animations
     @Override
     public void tick() {
         super.tick();
@@ -41,16 +52,28 @@ public class FishyEntity extends Cat {
         }
     }
     private void setupAnimationStates(){
+        // Idle
         if (this.idleAnimationTimeout <= 0){
-            this.idleAnimationTimeout = this.random.nextInt(20)+80;
+            this.idleAnimationTimeout = this.random.nextInt(20)+200;
             this.idleAnimationState.start(this.tickCount);
         }
         else{
             --this.idleAnimationTimeout;
         }
+
+        // Wave
+        if (this.waveCooldown == 0 && !hasWaved && this.canBeSeenByAnyone()) {
+            hasWaved = false;
+            waveCooldown = MIN_WAVE_COOLDOWN_TICKS + random.nextInt(MAX_WAVE_COOLDOWN_TICKS - MIN_WAVE_COOLDOWN_TICKS + 1); // Random cooldown between 20-30 seconds
+            this.waveAnimationState.start(this.tickCount);
+            System.out.println("Triggering wave animation.");
+        }
+        else{
+            --this.waveCooldown;
+        }
     }
 
-    // Fishy walk
+    // Override Walk
     @Override
     protected void updateWalkAnimation(float pPartialTick) {
         float f;
@@ -91,8 +114,8 @@ public class FishyEntity extends Cat {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Animal.createLivingAttributes()
-                .add(Attributes.MAX_HEALTH, 20)
-                .add(Attributes.FOLLOW_RANGE, 16)
+                .add(Attributes.MAX_HEALTH, 100)
+                .add(Attributes.FOLLOW_RANGE, 36)
                 .add(Attributes.MOVEMENT_SPEED, WALK_SPEED_MOD); // Reduced movement speed
     }
 
