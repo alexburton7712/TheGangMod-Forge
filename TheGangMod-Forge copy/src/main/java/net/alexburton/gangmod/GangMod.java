@@ -1,6 +1,9 @@
 package net.alexburton.gangmod;
 
 import com.mojang.logging.LogUtils;
+import net.alexburton.gangmod.entity.ModEntities;
+import net.alexburton.gangmod.entity.client.FishyRenderer;
+import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -33,6 +36,8 @@ public class GangMod
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
+        ModEntities.register(modEventBus);
+
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);
     }
@@ -62,7 +67,7 @@ public class GangMod
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event)
         {
-
+            EntityRenderers.register(ModEntities.FISHY.get(), FishyRenderer::new);
         }
     }
 }
