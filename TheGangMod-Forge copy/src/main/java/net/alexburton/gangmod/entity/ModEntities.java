@@ -19,7 +19,7 @@ public class ModEntities {
     // TODO: For each gang member, add RegistryObject
     public static final RegistryObject<EntityType<FishyEntity>> FISHY =
             ENTITY_TYPES.register("fishy", () -> EntityType.Builder.of(FishyEntity::new, MobCategory.CREATURE)
-                    .sized(2.5f, 2.5f).build("fishy"));
+                    .sized(0.5f, 0.5f).build("fishy"));
 
     public static void register(IEventBus eventBus){
         ENTITY_TYPES.register(eventBus);

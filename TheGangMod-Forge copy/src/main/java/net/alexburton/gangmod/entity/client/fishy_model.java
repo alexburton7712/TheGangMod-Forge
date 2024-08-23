@@ -21,6 +21,11 @@ public class fishy_model<T extends Entity> extends HierarchicalModel<T> {
 	private final ModelPart top;
 	private final ModelPart mainbody;
 	private final ModelPart fins;
+	private final ModelPart topfin;
+	private final ModelPart leftfin;
+	private final ModelPart rightfin;
+	private final ModelPart nub;
+	private final ModelPart backfin;
 
 	public fishy_model(ModelPart root) {
 		this.fishy = root.getChild("fishy");
@@ -28,6 +33,11 @@ public class fishy_model<T extends Entity> extends HierarchicalModel<T> {
 		this.top = fishy.getChild("top");
 		this.mainbody = fishy.getChild("mainbody");
 		this.fins = fishy.getChild("fins");
+		this.topfin = fins.getChild("topfin");
+		this.leftfin = fins.getChild("leftfin");
+		this.rightfin = fins.getChild("rightfin");
+		this.nub = fins.getChild("nub");
+		this.backfin = fins.getChild("backfin");
 	}
 
 	public static LayerDefinition createBodyLayer() {
@@ -40,15 +50,21 @@ public class fishy_model<T extends Entity> extends HierarchicalModel<T> {
 
 		PartDefinition top = fishy.addOrReplaceChild("top", CubeListBuilder.create().texOffs(12, 14).addBox(-2.0F, -7.0F, -3.0F, 5.0F, 1.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 6.0F, 0.5F));
 
-		PartDefinition mainbody = fishy.addOrReplaceChild("mainbody", CubeListBuilder.create().texOffs(0, 23).addBox(-5.0F, -5.0F, -3.0F, 2.0F, 4.0F, 5.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 0).addBox(-4.0F, -2.0F, -3.0F, 8.0F, 2.0F, 5.0F, new CubeDeformation(0.0F))
-		.texOffs(2, 20).addBox(-4.0F, -6.0F, -4.0F, 8.0F, 5.0F, 7.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 6.0F, 0.5F));
+		PartDefinition mainbody = fishy.addOrReplaceChild("mainbody", CubeListBuilder.create().texOffs(15, 5).addBox(-5.0F, -5.0F, -3.0F, 2.0F, 4.0F, 5.0F, new CubeDeformation(0.0F))
+				.texOffs(6, 0).addBox(-4.0F, -2.0F, -3.0F, 8.0F, 2.0F, 5.0F, new CubeDeformation(0.0F))
+				.texOffs(2, 20).addBox(-4.0F, -6.0F, -4.0F, 8.0F, 5.0F, 7.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 6.0F, 0.5F));
 
-		PartDefinition fins = fishy.addOrReplaceChild("fins", CubeListBuilder.create().texOffs(0, 19).addBox(-2.0F, -2.0F, 1.0F, 2.0F, 2.0F, 1.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 22).addBox(-6.0F, -1.0F, 1.0F, 1.0F, 1.0F, 1.0F, new CubeDeformation(0.0F))
-		.texOffs(0, 24).addBox(-1.0F, 3.0F, 5.0F, 1.0F, 2.0F, 1.0F, new CubeDeformation(0.0F))
-		.texOffs(25, 22).addBox(-9.0F, 2.0F, 1.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(0.0F))
-		.texOffs(21, 0).addBox(-1.0F, 3.0F, -3.0F, 1.0F, 2.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offset(2.0F, 0.0F, -1.5F));
+		PartDefinition fins = fishy.addOrReplaceChild("fins", CubeListBuilder.create(), PartPose.offset(2.0F, 0.0F, -1.5F));
+
+		PartDefinition topfin = fins.addOrReplaceChild("topfin", CubeListBuilder.create().texOffs(3, 23).addBox(-2.0F, -2.0F, 1.0F, 2.0F, 2.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+
+		PartDefinition leftfin = fins.addOrReplaceChild("leftfin", CubeListBuilder.create().texOffs(25, 24).addBox(1.0F, -3.0F, -5.0F, 1.0F, 2.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offset(-2.0F, 6.0F, 2.0F));
+
+		PartDefinition rightfin = fins.addOrReplaceChild("rightfin", CubeListBuilder.create().texOffs(25, 24).addBox(-0.5F, -1.0F, 0.0F, 1.0F, 2.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offset(-0.5F, 4.0F, 5.0F));
+
+		PartDefinition nub = fins.addOrReplaceChild("nub", CubeListBuilder.create().texOffs(25, 22).addBox(-6.0F, -1.0F, 1.0F, 1.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+
+		PartDefinition backfin = fins.addOrReplaceChild("backfin", CubeListBuilder.create().texOffs(3, 23).addBox(-9.0F, 2.0F, 1.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
 
 		return LayerDefinition.create(meshdefinition, 32, 32);
 	}
@@ -57,18 +73,13 @@ public class fishy_model<T extends Entity> extends HierarchicalModel<T> {
 	@Override
 	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		this.root().getAllParts().forEach(ModelPart::resetPose);
-		this.applyHeadRotation(netHeadYaw, headPitch, ageInTicks);
 
 		this.animateWalk(ModAnimationsDefinitions.FISHY_WALK, limbSwing, limbSwingAmount, 2f, 2.5f);
 		this.animate(((FishyEntity) entity).idleAnimationState, ModAnimationsDefinitions.FISHY_WALK, ageInTicks, 1f);
-	}
 
-	private void applyHeadRotation(float pNetHeadYaw, float pHeadPitch, float pAgeInTicks){
-		pNetHeadYaw = Mth.clamp(pNetHeadYaw, -30.0F, 30.0F);
-		pHeadPitch = Mth.clamp(pHeadPitch, -25.0F, 45.0F);
-
-		this.fishy.yRot = pNetHeadYaw * ((float)Math.PI / 180F);
-		this.fishy.xRot = pHeadPitch * ((float)Math.PI / 180F);
+		// TODO: how to get the wave animation in
+		//this.animate(((FishyEntity) entity).waveAnimationState, ModAnimationsDefinitions.FISHY_WAVE, ageInTicks, 1f);
+		//this.animateWalk(ModAnimationsDefinitions.FISHY_WAVE, limbSwing, limbSwingAmount, 2f, 2.5f);
 	}
 
 	@Override
