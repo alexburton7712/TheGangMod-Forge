@@ -1,10 +1,7 @@
 package net.alexburton.gangmod.entity.custom;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
@@ -17,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
@@ -26,13 +22,13 @@ public class FishyEntity extends Cat {
     private final Random random = new Random(); // Random generator
 
     public static final double TEMPT_SPEED_MOD = 0.5; // Slower speed for tempting
-    public static final double WALK_SPEED_MOD = 0.01;  // Slower speed for walking
+    public static final double WALK_SPEED_MOD = 0.1;  // Slower speed for walking
 
     private static final int MIN_WAVE_COOLDOWN_TICKS = 400; // 20 seconds in ticks
     private static final int MAX_WAVE_COOLDOWN_TICKS = 600; // 30 seconds in ticks
 
     private int idleAnimationTimeout = 0;
-    private int waveCooldown = 0; // Cooldown timer
+    private int waveAnimationTimeout = 0;
     private boolean hasWaved = false; // Ensure wave animation triggers only once
 
     public final AnimationState idleAnimationState = new AnimationState();
@@ -62,18 +58,19 @@ public class FishyEntity extends Cat {
         }
 
         // Wave
-        if (this.waveCooldown == 0 && !hasWaved && this.canBeSeenByAnyone()) {
+        if (this.waveAnimationTimeout == 0 && !hasWaved && this.canBeSeenByAnyone()) {
             hasWaved = false;
-            waveCooldown = MIN_WAVE_COOLDOWN_TICKS + random.nextInt(MAX_WAVE_COOLDOWN_TICKS - MIN_WAVE_COOLDOWN_TICKS + 1); // Random cooldown between 20-30 seconds
+            waveAnimationTimeout = MIN_WAVE_COOLDOWN_TICKS + random.nextInt(MAX_WAVE_COOLDOWN_TICKS - MIN_WAVE_COOLDOWN_TICKS + 1); // Random cooldown between 20-30 seconds
             this.waveAnimationState.start(this.tickCount);
             System.out.println("Triggering wave animation.");
         }
         else{
-            --this.waveCooldown;
+            --this.waveAnimationTimeout;
         }
     }
 
     // Override Walk
+    // TODO: still not working
     @Override
     protected void updateWalkAnimation(float pPartialTick) {
         float f;
@@ -87,9 +84,13 @@ public class FishyEntity extends Cat {
     }
 
     @Override
-    public void setSprinting(boolean sprinting) {
-        // Disable sprinting by overriding and doing nothing
-        super.setSprinting(false);
+    public float getSpeed() {
+        return (float) this.TEMPT_SPEED_MOD;
+    }
+
+    @Override
+    public void setSpeed(float pSpeed) {
+        super.setSpeed((float) this.WALK_SPEED_MOD);
     }
 
     @Override

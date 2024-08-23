@@ -4,15 +4,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.alexburton.gangmod.GangMod;
 import net.alexburton.gangmod.entity.custom.FishyEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 
-public class FishyRenderer extends MobRenderer<FishyEntity, fishy_model<FishyEntity>> {
+public class FishyRenderer extends MobRenderer<FishyEntity, FishyModel<FishyEntity>> {
 
     public FishyRenderer(EntityRendererProvider.Context pContext){
-        super(pContext, new fishy_model<>(pContext.bakeLayer(ModModelLayers.FISHY_LAYER)), 0.5f);
+        super(pContext, new FishyModel<>(pContext.bakeLayer(ModModelLayers.FISHY_LAYER)), 0.5f);
     }
 
     @Override

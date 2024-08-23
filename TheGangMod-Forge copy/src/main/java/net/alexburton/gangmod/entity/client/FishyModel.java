@@ -1,21 +1,16 @@
 package net.alexburton.gangmod.entity.client;// Made with Blockbench 4.10.4
-// Exported for Minecraft version 1.17 or later with Mojang mappings
-// Paste this class into your mod and generate all required imports
-
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.alexburton.gangmod.entity.animations.ModAnimationsDefinitions;
 import net.alexburton.gangmod.entity.custom.FishyEntity;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
-public class fishy_model<T extends Entity> extends HierarchicalModel<T> {
+public class FishyModel<T extends Entity> extends HierarchicalModel<T> {
 	private final ModelPart fishy;
 	private final ModelPart face;
 	private final ModelPart top;
@@ -27,7 +22,7 @@ public class fishy_model<T extends Entity> extends HierarchicalModel<T> {
 	private final ModelPart nub;
 	private final ModelPart backfin;
 
-	public fishy_model(ModelPart root) {
+	public FishyModel(ModelPart root) {
 		this.fishy = root.getChild("fishy");
 		this.face = fishy.getChild("face");
 		this.top = fishy.getChild("top");
@@ -69,7 +64,6 @@ public class fishy_model<T extends Entity> extends HierarchicalModel<T> {
 		return LayerDefinition.create(meshdefinition, 32, 32);
 	}
 
-	// Set animations here
 	@Override
 	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		this.root().getAllParts().forEach(ModelPart::resetPose);

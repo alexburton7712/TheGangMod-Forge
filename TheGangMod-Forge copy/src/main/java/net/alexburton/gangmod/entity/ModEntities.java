@@ -2,15 +2,12 @@ package net.alexburton.gangmod.entity;
 
 import net.alexburton.gangmod.GangMod;
 import net.alexburton.gangmod.entity.custom.FishyEntity;
-import net.minecraft.advancements.critereon.EntityTypePredicate;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-
-import java.awt.event.InputEvent;
 
 public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
