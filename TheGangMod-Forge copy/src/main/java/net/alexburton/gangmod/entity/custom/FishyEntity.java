@@ -1,5 +1,9 @@
 package net.alexburton.gangmod.entity.custom;
 
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
@@ -22,10 +26,10 @@ public class FishyEntity extends Cat {
     private final Random random = new Random(); // Random generator
 
     public static final double TEMPT_SPEED_MOD = 0.5; // Slower speed for tempting
-    public static final double WALK_SPEED_MOD = 0.1;  // Slower speed for walking
+    public static final double WALK_SPEED_MOD = 0.2;  // Slower speed for walking
 
-    private static final int MIN_WAVE_COOLDOWN_TICKS = 400; // 20 seconds in ticks
-    private static final int MAX_WAVE_COOLDOWN_TICKS = 600; // 30 seconds in ticks
+    private static final int MIN_WAVE_COOLDOWN_TICKS = 30; // 20 seconds in ticks
+    private static final int MAX_WAVE_COOLDOWN_TICKS = 50; // 30 seconds in ticks
 
     private int idleAnimationTimeout = 0;
     private int waveAnimationTimeout = 0;
@@ -33,6 +37,7 @@ public class FishyEntity extends Cat {
 
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState waveAnimationState = new AnimationState();
+    public final AnimationState walkAnimationState = new AnimationState();
 
     public FishyEntity(EntityType<? extends Cat> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
@@ -58,11 +63,12 @@ public class FishyEntity extends Cat {
         }
 
         // Wave
-        if (this.waveAnimationTimeout == 0 && !hasWaved && this.canBeSeenByAnyone()) {
-            hasWaved = false;
-            waveAnimationTimeout = MIN_WAVE_COOLDOWN_TICKS + random.nextInt(MAX_WAVE_COOLDOWN_TICKS - MIN_WAVE_COOLDOWN_TICKS + 1); // Random cooldown between 20-30 seconds
+        if (waveAnimationTimeout <= 0 && this.canBeSeenByAnyone()){
+            this.setPose(Pose.STANDING);
+            waveAnimationTimeout = 40; //Length in ticks (1.5 seconds * 20 = 30 ticks)
+            // can make wave at random
+            //waveAnimationTimeout = MIN_WAVE_COOLDOWN_TICKS + random.nextInt(MAX_WAVE_COOLDOWN_TICKS - MIN_WAVE_COOLDOWN_TICKS + 1); // Random cooldown between 20-30 seconds
             this.waveAnimationState.start(this.tickCount);
-            System.out.println("Triggering wave animation.");
         }
         else{
             --this.waveAnimationTimeout;
@@ -71,23 +77,32 @@ public class FishyEntity extends Cat {
 
     // Override Walk
     // TODO: still not working
+//    @Override
+//    protected void updateWalkAnimation(float pPartialTick) {
+//        float f;
+//        if(this.getPose() == Pose.STANDING){
+//            f = Math.min(pPartialTick * 6f, 1f);
+//        }
+//        else {
+//            f = 0f;
+//        }
+//        this.walkAnimation.update(f, 0.2f);
+//    }
     @Override
-    protected void updateWalkAnimation(float pPartialTick) {
-        float f;
-        if(this.getPose() == Pose.STANDING){
-            f = Math.min(pPartialTick * 6f, 1f);
+    public void aiStep() {
+        super.aiStep();
+
+        // Trigger your custom walk animation here if moving
+        if (this.getDeltaMovement().lengthSqr() > 0) {
+            this.walkAnimationState.start(this.tickCount);
         }
-        else {
-            f = 0f;
-        }
-        this.walkAnimation.update(f, 0.2f);
     }
 
+    // Movement Speed
     @Override
     public float getSpeed() {
-        return (float) this.TEMPT_SPEED_MOD;
+        return (float) this.WALK_SPEED_MOD;
     }
-
     @Override
     public void setSpeed(float pSpeed) {
         super.setSpeed((float) this.WALK_SPEED_MOD);
@@ -125,6 +140,16 @@ public class FishyEntity extends Cat {
         // By default, do not change the tamed state
     }
 
+    @Override
+    public boolean canMate(Animal pOtherAnimal) {
+        return false;
+    }
+
+    @Override
+    public boolean canHoldItem(ItemStack pStack) {
+       //TODO: make him hold cookie!
+        return super.canHoldItem(pStack);
+    }
 
     @Override
     public boolean isFood(ItemStack stack) {

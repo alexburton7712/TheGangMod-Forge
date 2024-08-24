@@ -67,13 +67,11 @@ public class FishyModel<T extends Entity> extends HierarchicalModel<T> {
 	@Override
 	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		this.root().getAllParts().forEach(ModelPart::resetPose);
-
-		this.animateWalk(ModAnimationsDefinitions.FISHY_WALK, limbSwing, limbSwingAmount, 2f, 2.5f);
 		this.animate(((FishyEntity) entity).idleAnimationState, ModAnimationsDefinitions.FISHY_WALK, ageInTicks, 1f);
+		this.animate(((FishyEntity) entity).walkAnimationState, ModAnimationsDefinitions.FISHY_WALK, ageInTicks, 1f);
 
 		// TODO: how to get the wave animation in
-		//this.animate(((FishyEntity) entity).waveAnimationState, ModAnimationsDefinitions.FISHY_WAVE, ageInTicks, 1f);
-		//this.animateWalk(ModAnimationsDefinitions.FISHY_WAVE, limbSwing, limbSwingAmount, 2f, 2.5f);
+		this.animate(((FishyEntity) entity).waveAnimationState, ModAnimationsDefinitions.FISHY_WAVE, ageInTicks, 1f);
 	}
 
 	@Override
