@@ -1,6 +1,10 @@
 package net.alexburton.gangmod.entity.custom;
 
 import net.alexburton.gangmod.entity.ai.FishyLieOnBedGoal;
+import net.alexburton.gangmod.entity.ai.FishyWaveGoal;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
@@ -16,6 +20,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.FileSystem;
 import java.util.Random;
 
 public class FishyEntity extends Animal {
@@ -28,13 +33,15 @@ public class FishyEntity extends Animal {
     private static final int MAX_WAVE_COOLDOWN_TICKS = 50; // 30 seconds in ticks
 
     private int idleAnimationTimeout = 0;
-    private int waveAnimationTimeout = 0;
+    public int waveAnimationTimeout = 0;
     private boolean isWaving = false; // Ensure wave animation triggers only once
     private boolean isLayingOnBack = false;
 
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState waveAnimationState = new AnimationState();
     public final AnimationState walkAnimationState = new AnimationState();
+
+    //private static final EntityDataAccessor<Boolean> WAVING = SynchedEntityData.defineId(FishyEntity.class, EntityDataSerializers.BOOLEAN);
 
     public FishyEntity(EntityType<? extends Animal> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
@@ -62,13 +69,25 @@ public class FishyEntity extends Animal {
             }
         }
 
+        //new wave using FishyWaveGoal - does not work
+//        if (this.isWaving() && waveAnimationTimeout <= 0){
+//            waveAnimationTimeout = MIN_WAVE_COOLDOWN_TICKS + random.nextInt(MAX_WAVE_COOLDOWN_TICKS - MIN_WAVE_COOLDOWN_TICKS + 1); // Random cooldown between 20-30 seconds
+//            this.waveAnimationState.start(this.tickCount);
+//        }
+//        else{
+//            --this.waveAnimationTimeout;
+//        }
+//        if(!this.isWaving()){
+//            waveAnimationState.stop();
+//        }
+
         // Wave
         if (waveAnimationTimeout <= 0 && this.canBeSeenByAnyone() && this.idleAnimationTimeout > 0 && this.getDeltaMovement().lengthSqr() <= 0){
-            this.setWaving(true); //Lock
+            //this.setWaving(true); //Lock
             this.setPose(Pose.STANDING);
             waveAnimationTimeout = MIN_WAVE_COOLDOWN_TICKS + random.nextInt(MAX_WAVE_COOLDOWN_TICKS - MIN_WAVE_COOLDOWN_TICKS + 1); // Random cooldown between 20-30 seconds
             this.waveAnimationState.start(this.tickCount);
-            this.setWaving(false); //Unlock
+            //this.setWaving(false); //Unlock
         }
         else{
             --this.waveAnimationTimeout;
@@ -125,6 +144,20 @@ public class FishyEntity extends Animal {
     public void setWaving(boolean isWaving) {
         this.isWaving = isWaving;
     }
+
+//    public boolean isWaving(){
+//        return this.entityData.get(WAVING);
+//    }
+//    public void setWaving(boolean isWaving) {
+//        this.entityData.set(WAVING, isWaving);
+//    }
+//
+//    @Override
+//    protected void defineSynchedData(SynchedEntityData.Builder pBuilder) {
+//        super.defineSynchedData(pBuilder);
+//        pBuilder.define(WAVING, false);
+//        //this.entityData.define(WAVING, false); //this was in the video but doesnt work
+//    }
     // </editor-fold>
 
     // TODO: not working yet
@@ -158,7 +191,10 @@ public class FishyEntity extends Animal {
         this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.1D));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 3f));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(6, new FishyLieOnBedGoal(this, 1.1, 8));
+        this.goalSelector.addGoal(7, new FishyLieOnBedGoal(this, 1.1, 8));
+
+//        this.goalSelector.addGoal(6, new FishyWaveGoal(this));
+//        this.targetSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 3f));
 
         // FUTURE GOALS TO LOOK INTO
 //        this.goalSelector.addGoal(6, new CatLieOnBedGoal(this, 1.5D, 20));
