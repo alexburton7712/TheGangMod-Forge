@@ -1,14 +1,10 @@
 package net.alexburton.gangmod.entity.custom;
 
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializer;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.alexburton.gangmod.entity.ai.FishyLieOnBedGoal;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AnimationState;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
@@ -22,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
-public class FishyEntity extends Cat {
+public class FishyEntity extends Animal {
     private final Random random = new Random(); // Random generator
 
     public static final double TEMPT_SPEED_MOD = 0.5; // Slower speed for tempting
@@ -33,17 +29,18 @@ public class FishyEntity extends Cat {
 
     private int idleAnimationTimeout = 0;
     private int waveAnimationTimeout = 0;
-    private boolean hasWaved = false; // Ensure wave animation triggers only once
+    private boolean isWaving = false; // Ensure wave animation triggers only once
+    private boolean isLayingOnBack = false;
 
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState waveAnimationState = new AnimationState();
     public final AnimationState walkAnimationState = new AnimationState();
 
-    public FishyEntity(EntityType<? extends Cat> pEntityType, Level pLevel) {
+    public FishyEntity(EntityType<? extends Animal> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
     }
 
-    // Tick related animations
+    // <editor-fold desc="Tick related animations">
     @Override
     public void tick() {
         super.tick();
@@ -55,42 +52,48 @@ public class FishyEntity extends Cat {
     private void setupAnimationStates(){
         // Idle
         if (this.idleAnimationTimeout <= 0){
-            this.idleAnimationTimeout = this.random.nextInt(20)+200;
+            this.idleAnimationTimeout = this.random.nextInt(20)+80;
             this.idleAnimationState.start(this.tickCount);
         }
         else{
             --this.idleAnimationTimeout;
+            if (this.getDeltaMovement().lengthSqr() > 0) {
+                this.walkAnimationState.start(this.tickCount);
+            }
         }
 
         // Wave
-        if (waveAnimationTimeout <= 0 && this.canBeSeenByAnyone()){
+        if (waveAnimationTimeout <= 0 && this.canBeSeenByAnyone() && this.idleAnimationTimeout > 0 && this.getDeltaMovement().lengthSqr() <= 0){
+            this.setWaving(true); //Lock
             this.setPose(Pose.STANDING);
-            waveAnimationTimeout = 40; //Length in ticks (1.5 seconds * 20 = 30 ticks)
-            // can make wave at random
-            //waveAnimationTimeout = MIN_WAVE_COOLDOWN_TICKS + random.nextInt(MAX_WAVE_COOLDOWN_TICKS - MIN_WAVE_COOLDOWN_TICKS + 1); // Random cooldown between 20-30 seconds
+            waveAnimationTimeout = MIN_WAVE_COOLDOWN_TICKS + random.nextInt(MAX_WAVE_COOLDOWN_TICKS - MIN_WAVE_COOLDOWN_TICKS + 1); // Random cooldown between 20-30 seconds
             this.waveAnimationState.start(this.tickCount);
+            this.setWaving(false); //Unlock
         }
         else{
             --this.waveAnimationTimeout;
         }
     }
+    //</editor-fold>>
 
-    // Override Walk
-    // TODO: still not working
-//    @Override
-//    protected void updateWalkAnimation(float pPartialTick) {
-//        float f;
-//        if(this.getPose() == Pose.STANDING){
-//            f = Math.min(pPartialTick * 6f, 1f);
-//        }
-//        else {
-//            f = 0f;
-//        }
-//        this.walkAnimation.update(f, 0.2f);
-//    }
+    @Override
+    public void setPose(Pose pose) {
+        // Prevent the entity from switching to other poses during the wave animation
+        if (this.waveAnimationTimeout <= 0) {
+            super.setPose(Pose.STANDING);
+        } else {
+            super.setPose(pose);
+        }
+    }
+
+    // <editor-fold desc="Walking">
     @Override
     public void aiStep() {
         super.aiStep();
+
+        if (this.isWaving()) {
+            this.setPose(Pose.STANDING);
+        }
 
         // Trigger your custom walk animation here if moving
         if (this.getDeltaMovement().lengthSqr() > 0) {
@@ -98,7 +101,44 @@ public class FishyEntity extends Cat {
         }
     }
 
-    // Movement Speed
+    // Override Walk
+    // TODO: still not working
+    @Override
+    protected void updateWalkAnimation(float pPartialTick) {
+        float f;
+        if(this.getPose() == Pose.STANDING){
+            f = Math.min(pPartialTick * 6f, 1f);
+        }
+        else {
+            f = 0f;
+        }
+        this.walkAnimation.update(f, 0.2f);
+    }
+
+    // </editor-fold>
+
+    // TODO: whole body is not moving
+    // <editor-fold> desc="Waving">
+    public boolean isWaving(){
+        return this.isWaving;
+    }
+    public void setWaving(boolean isWaving) {
+        this.isWaving = isWaving;
+    }
+    // </editor-fold>
+
+    // TODO: not working yet
+    // <editor-fold> desc="Laying on Back">
+    public void setLayingOnBack(boolean layingOnBack) {
+        this.isLayingOnBack = layingOnBack;
+    }
+    public boolean isLayingOnBack() {
+        return this.isLayingOnBack;
+    }
+    // </editor-fold>
+
+
+    // <editor-fold> desc="Movement Speed">
     @Override
     public float getSpeed() {
         return (float) this.WALK_SPEED_MOD;
@@ -107,7 +147,9 @@ public class FishyEntity extends Cat {
     public void setSpeed(float pSpeed) {
         super.setSpeed((float) this.WALK_SPEED_MOD);
     }
+    // </editor-fold>
 
+    // <editor-fold> desc="Goals">
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
@@ -116,9 +158,10 @@ public class FishyEntity extends Cat {
         this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.1D));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 3f));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(6, new FishyLieOnBedGoal(this, 1.1, 8));
 
         // FUTURE GOALS TO LOOK INTO
-        this.goalSelector.addGoal(6, new CatLieOnBedGoal(this, 1.5D, 20));
+//        this.goalSelector.addGoal(6, new CatLieOnBedGoal(this, 1.5D, 20));
 //        CatEntity.SleepWithOwnerGoal
 //                EscapeDangerGoal
 //                LookAroundGoal
@@ -127,6 +170,7 @@ public class FishyEntity extends Cat {
 //        PandaEntity.PlayGoal
 //        PandaEntity.SneezeGoal
     }
+    // </editor-fold>
 
     public static AttributeSupplier.Builder createAttributes() {
         return Animal.createLivingAttributes()
@@ -135,29 +179,20 @@ public class FishyEntity extends Cat {
                 .add(Attributes.MOVEMENT_SPEED, WALK_SPEED_MOD); // Reduced movement speed
     }
 
+    // <editor-fold desc="Other custom overrides">
     public void setTamed(boolean tamed) {
         // Do nothing or provide custom behavior
         // By default, do not change the tamed state
     }
-
-    @Override
-    public boolean canMate(Animal pOtherAnimal) {
-        return false;
-    }
-
     @Override
     public boolean canHoldItem(ItemStack pStack) {
        //TODO: make him hold cookie!
         return super.canHoldItem(pStack);
     }
-
-    @Override
-    public boolean isFood(ItemStack stack) {
-        // Return false for all items to disable taming
-        return false;
-    }
+    // </editor-fold>
 
     //TODO: custom sounds?
+    // <editor-fold desc="Custom Sounds">
     @Override
     protected @Nullable SoundEvent getAmbientSound() {
         return null;
@@ -170,4 +205,20 @@ public class FishyEntity extends Cat {
     protected SoundEvent getDeathSound() {
         return null;
     }
+    // </editor-fold>
+
+    // <editor-fold desc="Override rules">
+    @Override
+    public boolean isFood(ItemStack stack) { // Return false for all items to disable taming
+        return false;
+    }
+    @Override
+    public boolean canMate(Animal pOtherAnimal) { // No mating
+        return false;
+    }
+    @Override
+    public @Nullable AgeableMob getBreedOffspring(ServerLevel serverLevel, AgeableMob ageableMob) {
+        return null;
+    }
+    // </editor-fold>
 }
