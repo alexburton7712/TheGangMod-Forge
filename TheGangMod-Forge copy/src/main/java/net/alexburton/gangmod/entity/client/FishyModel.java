@@ -67,11 +67,18 @@ public class FishyModel<T extends Entity> extends HierarchicalModel<T> {
 	@Override
 	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		this.root().getAllParts().forEach(ModelPart::resetPose);
-		this.animate(((FishyEntity) entity).idleAnimationState, ModAnimationsDefinitions.FISHY_WALK, ageInTicks, 1f);
-		this.animate(((FishyEntity) entity).walkAnimationState, ModAnimationsDefinitions.FISHY_WALK, ageInTicks, 1f);
 
 		// TODO: how to get the wave animation in
-		this.animate(((FishyEntity) entity).waveAnimationState, ModAnimationsDefinitions.FISHY_WAVE, ageInTicks, 1f);
+		if (entity instanceof FishyEntity && ((FishyEntity) entity).isLayingOnBack()) {
+			// Apply rotation to simulate laying on back
+			this.fishy.xRot = 180.0F * ((float) Math.PI / 180F);  // Rotate 180 degrees
+			this.fishy.zRot = 0.0F;  // Reset other rotations as necessary
+		} else {
+			// Apply other animations
+			this.animate(((FishyEntity) entity).idleAnimationState, ModAnimationsDefinitions.FISHY_WALK, ageInTicks, 1f);
+			this.animate(((FishyEntity) entity).walkAnimationState, ModAnimationsDefinitions.FISHY_WALK, ageInTicks, 1f);
+			this.animate(((FishyEntity) entity).waveAnimationState, ModAnimationsDefinitions.FISHY_WAVE, ageInTicks, 1f);
+		}
 	}
 
 	@Override
